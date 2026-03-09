@@ -73,19 +73,19 @@
                     </button>
                     <div class="collapse navbar-collapse" id="navbarToggle">
                         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                            <a class="nav-link active" aria-current="page" href="{{ url_for("home") }}">Points</a>
+                            <a class="nav-link active" aria-current="page" href="{{ url_for("points") }}">Points</a>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     Diet
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="#">Meal Plan</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for("diet") }}">Meal Plan</a></li>
                                     <li><a class="dropdown-item" href="#">Groceries</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="#">Booze Tracker</a></li>
                                 </ul>
                             </li>
-                            <a class="nav-link active" aria-current="page" href="{{ url_for("home") }}">ToDos</a>
+                            <a class="nav-link active" aria-current="page" href="{{ url_for("todos") }}">Tasks</a>
                             <a class="nav-link active" aria-current="page" href="{{ url_for("home") }}">Calender</a>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -97,6 +97,7 @@
                                     <li><a class="dropdown-item" href="#">Finances</a></li>
                                 </ul>
                             </li>
+                            <a class="nav-link active" aria-current="page" href="{{ url_for("suggestions") }}">Suggerstions</a>
                         </ul>
 
 
@@ -158,20 +159,23 @@
                     {% block diet %} {% endblock diet %}
                     {% block todos %} {% endblock todos %}
                     {% block calender %} {% endblock calender %}
+                    {% block suggestions %} {% endblock suggestions %}
                 </div>
 
-                <aside class="col-md-4">
-                    <div class="content-section py-3 px-4 mb-4">
-                        <h3>Our Sidebar</h3>
-                        <p class="text-body-secondary">You can put any information here you'd like.</p>
-                        <ul class="list-group">
-                            <li class="list-group-item">Latest Posts</li>
-                            <li class="list-group-item">Announcements</li>
-                            <li class="list-group-item">Calendars</li>
-                            <li class="list-group-item">etc</li>
-                        </ul>
-                    </div>
-                </aside>
+                <!-- 
+                    <aside class="col-md-4">
+                        <div class="content-section py-3 px-4 mb-4">
+                            <h3>Our Sidebar</h3>
+                            <p class="text-body-secondary">You can put any information here you'd like.</p>
+                            <ul class="list-group">
+                                <li class="list-group-item">Latest Posts</li>
+                                <li class="list-group-item">Announcements</li>
+                                <li class="list-group-item">Calendars</li>
+                                <li class="list-group-item">etc</li>
+                            </ul>
+                        </div>
+                    </aside>
+                -->
             </div>
         </main>
         <footer class="mt-auto py-3 bg-body-tertiary border-top">

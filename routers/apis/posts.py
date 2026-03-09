@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-import models
+from models.post import Post
 from auth import CurrentUser
 from database import get_db
 from schemas import PostCreate, PostResponse, PostUpdate
@@ -18,7 +18,7 @@ async def get_posts(db: Annotated[AsyncSession, Depends(get_db)]):
     result = await db.execute(
         select(models.Post)
         .options(selectinload(models.Post.author))
-        .order_by(models.Post.date_posted.desc()),
+        .order_by(Post.date_posted.desc()),
     )
     posts = result.scalars().all()
     return posts
@@ -48,9 +48,9 @@ async def create_post(
 @router.get("/{post_id}", response_model=PostResponse)
 async def get_post(post_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
     result = await db.execute(
-        select(models.Post)
-        .options(selectinload(models.Post.author))
-        .where(models.Post.id == post_id),
+        select( Post)
+        .options(selectinload( Post.author))
+        .where(Post.id == post_id),
     )
     post = result.scalars().first()
     if post:
@@ -65,7 +65,7 @@ async def update_post_full(
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
-    result = await db.execute(select(models.Post).where(models.Post.id == post_id))
+    result = await db.execute(select(Post).where(Post.id == post_id))
     post = result.scalars().first()
     if not post:
         raise HTTPException(
@@ -94,7 +94,7 @@ async def update_post_partial(
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
-    result = await db.execute(select(models.Post).where(models.Post.id == post_id))
+    result = await db.execute(select(Post).where(Post.id == post_id))
     post = result.scalars().first()
     if not post:
         raise HTTPException(
@@ -123,7 +123,7 @@ async def delete_post(
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
-    result = await db.execute(select(models.Post).where(models.Post.id == post_id))
+    result = await db.execute(select(Post).where(Post.id == post_id))
     post = result.scalars().first()
     if not post:
         raise HTTPException(

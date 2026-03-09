@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from fastapi.templating import Jinja2Templates
 
-import models
+from models.post import Post
 from auth import CurrentUser
 from database import get_db
 from schemas import PostCreate, PostResponse, PostUpdate
@@ -21,9 +21,9 @@ templates = Jinja2Templates(directory="templates")
 @router.get("/posts", include_in_schema=False, name="posts")
 async def home(request: Request, db: Annotated[AsyncSession, Depends(get_db)]):
     result = await db.execute(
-        select(models.Post)
-        .options(selectinload(models.Post.author))
-        .order_by(models.Post.date_posted.desc()),
+        select(Post)
+        .options(selectinload(Post.author))
+        .order_by(Post.date_posted.desc()),
     )
     posts = result.scalars().all()
     return templates.TemplateResponse(
@@ -40,9 +40,9 @@ async def post_page(
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     result = await db.execute(
-        select(models.Post)
-        .options(selectinload(models.Post.author))
-        .where(models.Post.id == post_id),
+        select(Post)
+        .options(selectinload(Post.author))
+        .where(Post.id == post_id),
     )
     post = result.scalars().first()
     if post:

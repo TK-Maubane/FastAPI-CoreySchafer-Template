@@ -15,13 +15,7 @@ from schemas import PostCreate, PostResponse, PostUpdate
 
 router = APIRouter()
 
-
 templates = Jinja2Templates(directory="templates")
-
-
-
-
-
 
 
 @router.get("/users/{user_id}/posts", include_in_schema=False, name="user_posts")

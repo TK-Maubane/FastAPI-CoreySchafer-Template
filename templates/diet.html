@@ -1,5 +1,148 @@
 {% extends "layout.html" %}
+
 {% block diet %}
+<style>
+    /* Transparent Architecture */
+    .diet-container { background: transparent; color: #e2e8f0; font-family: 'Inter', sans-serif; }
+    
+    .glass-card { 
+        background-color: rgba(15, 23, 42, 0.4); 
+        border: 1px solid rgba(255, 255, 255, 0.1); 
+        backdrop-filter: blur(8px);
+        border-radius: 12px;
+    }
 
+    .table-transparent { --bs-table-bg: transparent; color: #cbd5e1; }
+    .table-transparent thead th { 
+        background-color: rgba(255, 255, 255, 0.05);
+        color: #38bdf8; 
+        font-size: 0.75rem; 
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
+    .day-label { font-weight: 700; color: #ffffff; width: 110px; border-right: 1px solid rgba(255, 255, 255, 0.1); }
+    .comment-text { display: block; font-size: 0.7rem; color: #94a3b8; font-style: italic; margin-top: 4px; }
+    
+    /* Responsive visibility */
+    @media (max-width: 991px) { .desktop-view { display: none; } .mobile-view { display: block; } }
+    @media (min-width: 992px) { .mobile-view { display: none; } }
+</style>
+
+<div class="container-fluid py-5 diet-container">
+    
+    <div class="text-center mb-5">
+        <h2 class="fw-bold text-white mb-1">Fortnitely Diet</h2>
+        <p class="text-secondary italic">Re ke se je wayay without a plan...</p>
+    </div>
+
+    {% for week_date in ["15th February, 2025", "22nd February, 2025"] %}
+    <div class="mb-5">
+        <h4 class="mb-3 text-info fw-light border-start border-info ps-3">Week: <strong>{{ week_date }}</strong></h4>
+        
+        <div class="glass-card desktop-view overflow-hidden shadow-lg">
+            <div class="table-responsive">
+                <table class="table table-transparent table-hover align-top mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Weekday</th>
+                            <th>Breakfast</th>
+                            <th>Snack #1</th>
+                            <th>Lunch</th>
+                            <th>Snack #2</th>
+                            <th>Dinner</th>
+                            <th class="text-center">Edit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th class="ps-4 day-label">Monday</th>
+                            <td>Steel-cut oats with blueberries <small class="comment-text">Low GI for mental clarity.</small></td>
+                            <td><small class="comment-text text-muted">None</small></td>
+                            <td>Quinoa & Kale salad with grilled salmon <small class="comment-text">Omega-3s for the brain.</small></td>
+                            <td></td>
+                            <td>Baked chicken breast with steamed broccoli <small class="comment-text">Protein-dense, no fluff.</small></td>
+                            <td class="text-center"><button class="btn btn-sm btn-link text-info" onclick="openEdit('{{ week_date }}', 'Monday')"><i class="fas fa-edit"></i></button></td>
+                        </tr>
+                        <tr>
+                            <th class="ps-4 day-label">Tuesday</th>
+                            <td>Greek yogurt with flaxseeds <small class="comment-text">Probiotics for the gut-brain axis.</small></td>
+                            <td></td>
+                            <td>Lentil soup with a side of spinach <small class="comment-text">Iron to avoid midday fatigue.</small></td>
+                            <td></td>
+                            <td>Tofu stir-fry with brown rice <small class="comment-text">Solid plant-based macros.</small></td>
+                            <td class="text-center"><button class="btn btn-sm btn-link text-info" onclick="openEdit('{{ week_date }}', 'Tuesday')"><i class="fas fa-edit"></i></button></td>
+                        </tr>
+                        {% for day in ["Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] %}
+                        <tr>
+                            <th class="ps-4 day-label">{{ day }}</th>
+                            <td>Avocado toast on rye <small class="comment-text">Healthy fats, don't overdo the bread.</small></td>
+                            <td></td>
+                            <td>Turkey wrap with plenty of greens <small class="comment-text">Light enough to avoid a food coma.</small></td>
+                            <td></td>
+                            <td>Grilled mackerel with roasted sweet potato <small class="comment-text">Excellent recovery meal.</small></td>
+                            <td class="text-center"><button class="btn btn-sm btn-link text-info" onclick="openEdit('{{ week_date }}', '{{ day }}')"><i class="fas fa-edit"></i></button></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mobile-view">
+            <div class="glass-card p-3 mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-info fw-bold">Monday</span>
+                    <button class="btn btn-sm btn-outline-info rounded-pill" onclick="openEdit('{{ week_date }}', 'Monday')">Edit</button>
+                </div>
+                <div class="small">
+                    <p class="mb-1"><strong>Breakfast:</strong> Steel-cut oats...</p>
+                    <p class="mb-1"><strong>Lunch:</strong> Quinoa & Salmon salad</p>
+                    <p class="mb-0"><strong>Dinner:</strong> Chicken & Broccoli</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="modal fade" id="editMealModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-card border-0">
+            <div class="modal-header border-bottom border-secondary">
+                <h6 class="modal-title text-white">REFACTORING: <span id="modalDay" class="text-info"></span></h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body bg-dark rounded-bottom">
+                <form id="editForm">
+                    <div class="mb-3">
+                        <label class="form-label small text-muted text-uppercase">Breakfast</label>
+                        <input type="text" id="breakfastInput" class="form-control bg-secondary text-white border-0">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted text-uppercase">Lunch</label>
+                        <input type="text" id="lunchInput" class="form-control bg-secondary text-white border-0">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted text-uppercase">Dinner</label>
+                        <input type="text" id="dinnerInput" class="form-control bg-secondary text-white border-0">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal">Abstain</button>
+                <button type="button" class="btn btn-info btn-sm px-4 fw-bold">COMMIT_CHANGES</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openEdit(week, day) {
+        document.getElementById('modalDay').innerText = `${day} (${week})`;
+        var myModal = new bootstrap.Modal(document.getElementById('editMealModal'));
+        myModal.show();
+    }
+</script>
 {% endblock diet %}

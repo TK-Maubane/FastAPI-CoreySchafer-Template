@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from starlette.concurrency import run_in_threadpool
 
-import models
+from models.user import User
 from auth import (
     CurrentUser,
     create_access_token,
@@ -31,8 +31,8 @@ router = APIRouter()
 )
 async def create_user(user: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):
     result = await db.execute(
-        select(models.User).where(
-            func.lower(models.User.username) == user.username.lower(),
+        select(User).where(
+            func.lower(User.username) == user.username.lower(),
         ),
     )
     existing_user = result.scalars().first()
@@ -43,7 +43,7 @@ async def create_user(user: UserCreate, db: Annotated[AsyncSession, Depends(get_
         )
 
     result = await db.execute(
-        select(models.User).where(func.lower(models.User.email) == user.email.lower()),
+        select(User).where(func.lower(User.email) == user.email.lower()),
     )
     existing_email = result.scalars().first()
     if existing_email:
@@ -52,7 +52,7 @@ async def create_user(user: UserCreate, db: Annotated[AsyncSession, Depends(get_
             detail="Email already registered",
         )
 
-    new_user = models.User(
+    new_user = User(
         username=user.username,
         email=user.email.lower(),
         password_hash=hash_password(user.password),
@@ -71,8 +71,8 @@ async def login_for_access_token(
     # Look up user by email (case-insensitive)
     # Note: OAuth2PasswordRequestForm uses "username" field, but we treat it as email
     result = await db.execute(
-        select(models.User).where(
-            func.lower(models.User.email) == form_data.username.lower(),
+        select(User).where(
+            func.lower(User.email) == form_data.username.lower(),
         ),
     )
     user = result.scalars().first()
@@ -102,7 +102,7 @@ async def get_current_user(current_user: CurrentUser):
 
 @router.get("/{user_id}", response_model=UserPublic)
 async def get_user(user_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
-    result = await db.execute(select(models.User).where(models.User.id == user_id))
+    result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalars().first()
     if user:
         return user
@@ -111,7 +111,7 @@ async def get_user(user_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
 
 @router.get("/{user_id}/posts", response_model=list[PostResponse])
 async def get_user_posts(user_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
-    result = await db.execute(select(models.User).where(models.User.id == user_id))
+    result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalars().first()
     if not user:
         raise HTTPException(
@@ -119,10 +119,10 @@ async def get_user_posts(user_id: int, db: Annotated[AsyncSession, Depends(get_d
             detail="User not found",
         )
     result = await db.execute(
-        select(models.Post)
-        .options(selectinload(models.Post.author))
-        .where(models.Post.user_id == user_id)
-        .order_by(models.Post.date_posted.desc()),
+        select(Post)
+        .options(selectinload(Post.author))
+        .where(Post.user_id == user_id)
+        .order_by(Post.date_posted.desc()),
     )
     posts = result.scalars().all()
     return posts
@@ -141,7 +141,7 @@ async def update_user(
             detail="Not authorized to update this user",
         )
 
-    result = await db.execute(select(models.User).where(models.User.id == user_id))
+    result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalars().first()
     if not user:
         raise HTTPException(
@@ -153,8 +153,8 @@ async def update_user(
         and user_update.username.lower() != user.username.lower()
     ):
         result = await db.execute(
-            select(models.User).where(
-                func.lower(models.User.username) == user_update.username.lower(),
+            select(User).where(
+                func.lower(User.username) == user_update.username.lower(),
             ),
         )
         existing_user = result.scalars().first()
@@ -168,8 +168,8 @@ async def update_user(
         and user_update.email.lower() != user.email.lower()
     ):
         result = await db.execute(
-            select(models.User).where(
-                func.lower(models.User.email) == user_update.email.lower(),
+            select(User).where(
+                func.lower(User.email) == user_update.email.lower(),
             ),
         )
         existing_email = result.scalars().first()
@@ -201,7 +201,7 @@ async def delete_user(
             detail="Not authorized to delete this user",
         )
 
-    result = await db.execute(select(models.User).where(models.User.id == user_id))
+    result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalars().first()
     if not user:
         raise HTTPException(

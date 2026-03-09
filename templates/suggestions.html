@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+
+{% block diet %}
+<div class="container-fluid py-4">
+    <h2 class="mb-4 text-warning fw-bold"><i class="fas fa-utensils me-2"></i>Dietary Suggestions</h2>
+
+    <div class="card bg-secondary border-0 shadow-sm mb-5">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Make a Suggestion</h5>
+            <form action="/submit-suggestion" method="POST">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <textarea name="suggestion" class="form-control bg-dark text-light border-0" rows="2" placeholder="What's on your mind? (e.g., 'More protein, less sadness')" required></textarea>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <select name="category" class="form-select bg-dark text-light border-0 shadow-none">
+                            <option selected>Select Tag</option>
+                            <option value="Meal Plan">Meal Plan</option>
+                            <option value="Grocery">Grocery</option>
+                            <option value="Cheat Meal">Cheat Meal</option>
+                            <option value="Supplement">Supplement</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <select name="suggested_by" class="form-select bg-dark text-light border-0 shadow-none">
+                            <option value="TK">TK</option>
+                            <option value="Nthabi">Nthabi</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <button type="submit" class="btn btn-warning w-100 fw-bold">Post Suggesta</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <h4 class="h6 text-uppercase text-muted mb-3">Recent Suggestions</h4>
+    <div class="row g-4">
+        
+        <div class="col-12">
+            <div class="card bg-secondary border-0 shadow-sm">
+                <div class="card-header bg-transparent border-bottom border-dark d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge rounded-pill bg-info text-dark me-2">Meal Plan</span>
+                        <span class="text-light fw-bold">TK</span>
+                        <small class="text-muted ms-2">Today at 12:45 PM</small>
+                    </div>
+                    <span class="badge bg-success">In Review</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-text text-light">We should probably stop eating pizza every time a Python script fails to compile. My LDL cholesterol is screaming.</p>
+                    
+                    <div class="mt-4 pt-3 border-top border-dark">
+                        <h6 class="text-info small mb-3"><i class="fas fa-comments me-1"></i> Comments (2)</h6>
+                        
+                        <div class="d-flex mb-3">
+                            <div class="flex-shrink-0">
+                                <img src="https://ui-avatars.com/api/?name=Nthabi&background=random" class="rounded-circle" width="32">
+                            </div>
+                            <div class="ms-3 bg-dark p-2 rounded w-100">
+                                <div class="d-flex justify-content-between">
+                                    <strong class="small text-light">Nthabi</strong>
+                                    <small class="text-muted" style="font-size: 0.7rem;">1 hour ago</small>
+                                </div>
+                                <p class="small mb-0 text-secondary">But the pizza is the only thing keeping the logic flowing...</p>
+                            </div>
+                        </div>
+
+                        <form class="d-flex mt-3">
+                            <input type="text" class="form-control form-control-sm bg-dark text-light border-0 me-2 shadow-none" placeholder="Write a witty retort...">
+                            <button type="submit" class="btn btn-sm btn-outline-info"><i class="fas fa-paper-plane"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock diet %}
