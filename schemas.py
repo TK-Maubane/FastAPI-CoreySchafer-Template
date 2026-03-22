@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
+############### USER SCHEM  ##############################
 class UserBase(BaseModel):
     username: str = Field(min_length=1, max_length=50)
     email: EmailStr = Field(max_length=120)
@@ -19,6 +20,7 @@ class UserPublic(BaseModel):
     username: str
     image_file: str | None
     image_path: str
+    total_points: int 
 
 
 class UserPrivate(UserPublic):
@@ -34,6 +36,9 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
+
+
+############### POST SCHEM  ##############################
 
 class PostBase(BaseModel):
     title: str = Field(min_length=1, max_length=100)
@@ -56,3 +61,24 @@ class PostResponse(PostBase):
     user_id: int
     date_posted: datetime
     author: UserPublic
+
+
+############### POINT SCHEM  ##############################
+
+class PointBase(BaseModel):
+    value: int = Field(default=1)
+    reason: str = Field(min_length=1, default="Well behaved")
+    
+    
+class PointCreate(PointBase):
+    recipient_id: int
+
+
+class PointResponse(PointBase):
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: int
+    issued_by: UserPublic
+    recipient: UserPublic
+    created_at: datetime
+    

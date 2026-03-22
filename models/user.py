@@ -6,7 +6,7 @@ from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database import Base
-
+from models.point import Point
 
 
 class User(Base):
@@ -26,9 +26,29 @@ class User(Base):
         back_populates="author",
         cascade="all, delete-orphan",
     )
+    
+    
+    points: Mapped[list[Point]] = relationship(
+        Point,
+        foreign_keys=[Point.recipient_id],
+        back_populates="recipient"
+    )
+    
+    # Points they have given to others
+    points_issued: Mapped[list[Point]] = relationship(
+        Point, 
+        foreign_keys=[Point.issuer_id],
+        back_populates="issued_by"
+    )
+
 
     @property
     def image_path(self) -> str:
         if self.image_file:
             return f"/media/profile_pics/{self.image_file}"
         return "/static/profile_pics/default.jpg"
+    
+    @property
+    def total_points(self) -> int:
+        return sum(p.value for p in self.points) if self.points else 0
+

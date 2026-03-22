@@ -9,53 +9,43 @@ from models.post import Post
 from auth import CurrentUser
 from database import get_db
 from schemas import PostCreate, PostResponse, PostUpdate
+from dependencies import post_service
 
 router = APIRouter()
 
 
 @router.get("", response_model=list[PostResponse])
-async def get_posts(db: Annotated[AsyncSession, Depends(get_db)]):
-    result = await db.execute(
-        select(models.Post)
-        .options(selectinload(models.Post.author))
-        .order_by(Post.date_posted.desc()),
-    )
-    posts = result.scalars().all()
+async def get_posts(
+    service: Annotated[AsyncSession, Depends(post_service)]
+    ):
+    
+    posts = await service.get_all_posts()
     return posts
 
 
-@router.post(
-    "",
-    response_model=PostResponse,
-    status_code=status.HTTP_201_CREATED,
-)
+@router.post("",
+             response_model=PostResponse,
+             status_code=status.HTTP_201_CREATED)
 async def create_post(
     post: PostCreate,
     current_user: CurrentUser,
-    db: Annotated[AsyncSession, Depends(get_db)],
-):
-    new_post = models.Post(
-        title=post.title,
-        content=post.content,
-        user_id=current_user.id,
-    )
-    db.add(new_post)
-    await db.commit()
-    await db.refresh(new_post, attribute_names=["author"])
+    service: Annotated[AsyncSession, Depends(post_service)]
+    ):
+    
+    new_post = await service.create_post(user_id=current_user.id, post=post)
     return new_post
 
 
-@router.get("/{post_id}", response_model=PostResponse)
-async def get_post(post_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
-    result = await db.execute(
-        select( Post)
-        .options(selectinload( Post.author))
-        .where(Post.id == post_id),
-    )
-    post = result.scalars().first()
-    if post:
-        return post
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
+@router.get("/{post_id}", 
+            response_model=PostResponse)
+async def get_post(post_id: int, 
+                   service: Annotated[AsyncSession, Depends(post_service)]):
+    post = await service.get_single_post(post_id=post_id)
+    
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
+
+    return post
 
 
 @router.put("/{post_id}", response_model=PostResponse)
@@ -63,28 +53,12 @@ async def update_post_full(
     post_id: int,
     post_data: PostCreate,
     current_user: CurrentUser,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    service: Annotated[AsyncSession, Depends(post_service)],
 ):
-    result = await db.execute(select(Post).where(Post.id == post_id))
-    post = result.scalars().first()
-    if not post:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Post not found",
-        )
-
-    if post.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to update this post",
-        )
-
-    post.title = post_data.title
-    post.content = post_data.content
-
-    await db.commit()
-    await db.refresh(post, attribute_names=["author"])
-    return post
+    
+    edited_post = await service.edit_post(post_id=post_id, post_data=post_data, user_id=current_user.id)
+    
+    return edited_post
 
 
 @router.patch("/{post_id}", response_model=PostResponse)
@@ -92,7 +66,7 @@ async def update_post_partial(
     post_id: int,
     post_data: PostUpdate,
     current_user: CurrentUser,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    db: Annotated[AsyncSession, Depends(post_service)],
 ):
     result = await db.execute(select(Post).where(Post.id == post_id))
     post = result.scalars().first()

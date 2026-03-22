@@ -16,7 +16,9 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 import models
 from database import Base, engine, get_db
-from routers.apis import posts as posts_api, users as users_api
+from routers.apis import posts as posts_api, \
+                         users as users_api, \
+                         points as points_api
 from routers.web import posts, users, points, diet, suggestions, todos
 
 
@@ -38,12 +40,14 @@ app.mount("/media", StaticFiles(directory="media"), name="media")
 
 templates = Jinja2Templates(directory="templates")
 
-# apin endpoints
+# api endpoints
 app.include_router(users_api.router, prefix="/api/users", tags=["users"])
+app.include_router(points_api.router, prefix="/api/points", tags=["points"])
 app.include_router(posts_api.router, prefix="/api/posts", tags=["posts"])
 
+
 # web endpoints
-app.include_router(users.router, prefix="", tags=["users"])
+# app.include_router(users.router, prefix="", tags=["users"])
 app.include_router(posts.router, prefix="", tags=["posts"])
 app.include_router(points.router, prefix="", tags=["points"])
 app.include_router(diet.router, prefix="", tags=["diet"]) 

@@ -1,14 +1,14 @@
 
 from typing import Annotated
-from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request, status
 
-from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from fastapi.templating import Jinja2Templates
 
-import models
+from models.user import User
+from models.post import Post
 from auth import CurrentUser
 from database import get_db
 from schemas import PostCreate, PostResponse, PostUpdate
@@ -22,22 +22,11 @@ templates = Jinja2Templates(directory="templates")
 async def user_posts_page(
     request: Request,
     user_id: int,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    service: Annotated[AsyncSession, Depends(get_db)],
 ):
-    result = await db.execute(select(models.User).where(models.User.id == user_id))
-    user = result.scalars().first()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-    result = await db.execute(
-        select(models.Post)
-        .options(selectinload(models.Post.author))
-        .where(models.Post.user_id == user_id)
-        .order_by(models.Post.date_posted.desc()),
-    )
-    posts = result.scalars().all()
+    posts = await service.get_user_posts()
+    
+    
     return templates.TemplateResponse(
         request,
         "user_posts.html",

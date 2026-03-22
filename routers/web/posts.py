@@ -12,6 +12,9 @@ from auth import CurrentUser
 from database import get_db
 from schemas import PostCreate, PostResponse, PostUpdate
 
+from dependencies import post_service
+
+
 router = APIRouter()
 
 templates = Jinja2Templates(directory="templates")
@@ -19,17 +22,16 @@ templates = Jinja2Templates(directory="templates")
 
 @router.get("/", include_in_schema=False, name="home")
 @router.get("/posts", include_in_schema=False, name="posts")
-async def home(request: Request, db: Annotated[AsyncSession, Depends(get_db)]):
-    result = await db.execute(
-        select(Post)
-        .options(selectinload(Post.author))
-        .order_by(Post.date_posted.desc()),
-    )
-    posts = result.scalars().all()
+async def home(
+    request: Request, service: Annotated[AsyncSession, Depends(post_service)]
+):
+
+    posts = await service.get_all_posts()
+
     return templates.TemplateResponse(
-        request,
-        "home.html",
-        {"posts": posts, "title": "Home"},
+        request=request,
+        name="home.html",
+        context={"posts": posts, "title": "Home"},
     )
 
 
@@ -37,21 +39,35 @@ async def home(request: Request, db: Annotated[AsyncSession, Depends(get_db)]):
 async def post_page(
     request: Request,
     post_id: int,
-    db: Annotated[AsyncSession, Depends(get_db)],
+    service: Annotated[AsyncSession, Depends(post_service)],
 ):
-    result = await db.execute(
-        select(Post)
-        .options(selectinload(Post.author))
-        .where(Post.id == post_id),
-    )
-    post = result.scalars().first()
+
+    post = await service.get_single_post(post_id=post_id)
+
     if post:
         title = post.title[:50]
         return templates.TemplateResponse(
-            request,
-            "post.html",
-            {"post": post, "title": title},
+            request=request,
+            name="post.html",
+            context={"post": post, "title": title},
         )
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
 
 
+
+@router.get("/posts/user_posts/{user_id}", include_in_schema=False, name="user_posts")
+async def user_posts_page(
+    request: Request,
+    user_id: int,
+    service: Annotated[AsyncSession, Depends(post_service)],
+):
+    posts = await service.get_user_posts(user_id=user_id)
+    if posts:
+        user = posts[0].author
+    
+    
+    return templates.TemplateResponse(
+        request,
+        "user_posts.html",
+        {"posts": posts, "user": user, "title": f"{user.username}'s Posts"},
+    )
